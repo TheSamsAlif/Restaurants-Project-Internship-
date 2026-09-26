@@ -82,7 +82,10 @@ The production output will be generated in `dist/spa`.
 
 ---
 
-## 🌐 Vercel Deployment
+## 🌐 Live Demo & Deployment
+
+- **Live URL 1:** [https://rms-restaurant.vercel.app](https://rms-restaurant.vercel.app)
+- **Live URL 2:** [https://sams-alif-rms.vercel.app](https://sams-alif-rms.vercel.app)
 
 A `vercel.json` file is included in the root directory:
 ```json
