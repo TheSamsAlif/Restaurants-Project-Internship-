@@ -18,8 +18,13 @@
               style="width: 100%; height: 140px; border-radius: 12px;"
               fit="cover"
             >
+              <template #error>
+                <div class="absolute-full flex flex-center bg-grey-2 text-grey-7">
+                  <q-icon name="sym_o_restaurant" size="32px" color="primary" />
+                </div>
+              </template>
               <div class="absolute-bottom text-caption text-center q-pa-xs">
-                Food Image Preview
+                {{ locale.lang === 'bn' ? 'খাবারের ছবির প্রিভিউ' : 'Food Image Preview' }}
               </div>
             </q-img>
           </div>
@@ -156,12 +161,17 @@ const formRef = ref(null)
 const categoryOptions = ref(menu.categories)
 
 const presets = [
+  { name: 'Fried Chicken', url: 'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?w=500&auto=format&fit=crop&q=80' },
+  { name: 'Set Menu', url: 'https://images.unsplash.com/photo-1610614819513-58e34989848b?w=500&auto=format&fit=crop&q=80' },
+  { name: 'Fanta', url: 'https://images.unsplash.com/photo-1624517452488-04869289c4ca?w=500&auto=format&fit=crop&q=80' },
+  { name: 'Sprite', url: 'https://images.unsplash.com/photo-1625772299848-391b6a87d7b3?w=500&auto=format&fit=crop&q=80' },
+  { name: 'Coke', url: 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=500&auto=format&fit=crop&q=80' },
+  { name: 'Borhani', url: 'https://images.unsplash.com/photo-1556881286-fc6915169721?w=500&auto=format&fit=crop&q=80' },
   { name: 'Biryani', url: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=500&auto=format&fit=crop&q=80' },
   { name: 'Burger', url: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=500&auto=format&fit=crop&q=80' },
   { name: 'Pizza', url: 'https://images.unsplash.com/photo-1604382355076-af4b0eb60143?w=500&auto=format&fit=crop&q=80' },
-  { name: 'Pasta', url: 'https://images.unsplash.com/photo-1621996346565-e3d5d6281691?w=500&auto=format&fit=crop&q=80' },
-  { name: 'Coffee', url: 'https://images.unsplash.com/photo-1517701550927-30cf4ba1dba5?w=500&auto=format&fit=crop&q=80' },
-  { name: 'Wings', url: 'https://images.unsplash.com/photo-1567620832903-9fc6debc209f?w=500&auto=format&fit=crop&q=80' },
+  { name: 'Pasta', url: 'https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=500&auto=format&fit=crop&q=80' },
+  { name: 'Fries', url: 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=500&auto=format&fit=crop&q=80' },
 ]
 
 watch(

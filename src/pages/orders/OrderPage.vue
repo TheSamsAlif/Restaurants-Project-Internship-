@@ -104,6 +104,11 @@
                 style="height: 120px;"
                 fit="cover"
               >
+                <template #error>
+                  <div class="absolute-full flex flex-center bg-grey-3 text-grey-7">
+                    <q-icon name="sym_o_restaurant" size="30px" color="primary" />
+                  </div>
+                </template>
                 <div class="absolute-bottom-left text-caption text-weight-bold q-pa-xs">
                   {{ locale.getItemCategory(it) }}
                 </div>
@@ -185,11 +190,70 @@
                 </div>
               </div>
 
+              <!-- Special Dining Discounts (Requirement 2 & 3) -->
+              <div class="q-my-sm surface-sunken q-pa-sm rounded-borders">
+                <div class="text-caption text-weight-bold text-grey-8 q-mb-xs row items-center" style="gap: 4px;">
+                  <q-icon name="sym_o_loyalty" color="primary" size="16px" />
+                  <span>{{ locale.t('orders.discountsTitle') }}</span>
+                </div>
+                <div class="row q-gutter-xs">
+                  <q-btn
+                    dense
+                    unelevated
+                    size="sm"
+                    :color="orders.discountType === 'none' ? 'primary' : 'grey-3'"
+                    :text-color="orders.discountType === 'none' ? 'white' : 'black'"
+                    :label="locale.t('orders.noDiscount')"
+                    @click="orders.setDiscount('none')"
+                    class="text-weight-bold q-px-xs"
+                  />
+                  <q-btn
+                    dense
+                    unelevated
+                    size="sm"
+                    :color="orders.discountType === 'student' ? 'positive' : 'grey-3'"
+                    :text-color="orders.discountType === 'student' ? 'white' : 'black'"
+                    :label="locale.t('orders.studentDiscount')"
+                    @click="orders.setDiscount('student')"
+                    class="text-weight-bold q-px-xs"
+                  />
+                  <q-btn
+                    dense
+                    unelevated
+                    size="sm"
+                    :color="orders.discountType === 'couple' ? 'accent' : 'grey-3'"
+                    :text-color="orders.discountType === 'couple' ? 'white' : 'black'"
+                    :label="locale.t('orders.coupleDiscount')"
+                    @click="orders.setDiscount('couple')"
+                    class="text-weight-bold q-px-xs"
+                  />
+                  <q-btn
+                    dense
+                    unelevated
+                    size="sm"
+                    :color="orders.discountType === 'senior' ? 'deep-purple' : 'grey-3'"
+                    :text-color="orders.discountType === 'senior' ? 'white' : 'black'"
+                    :label="locale.t('orders.seniorDiscount')"
+                    @click="orders.setDiscount('senior')"
+                    class="text-weight-bold q-px-xs"
+                  />
+                </div>
+              </div>
+
               <!-- Price Breakdown -->
               <q-separator class="q-my-xs" />
               <div class="row justify-between text-body2 q-py-xs">
                 <span class="text-grey-7">{{ locale.t('orders.subtotal') }}</span>
                 <span class="font-mono text-weight-medium">{{ formatMoney(orders.subtotal) }}</span>
+              </div>
+              <div v-if="orders.discountAmount > 0" class="row justify-between text-body2 q-py-xs text-positive text-weight-bold">
+                <span>
+                  <q-icon name="sym_o_check_circle" size="14px" class="q-mr-xs" />
+                  {{ orders.discountType === 'student' ? (locale.lang === 'bn' ? 'শিক্ষার্থী ছাড় (১০%)' : 'Student Discount (10%)') :
+                     orders.discountType === 'couple' ? (locale.lang === 'bn' ? 'কাপল অফার (১৫%)' : 'Couple Offer (15%)') :
+                     (locale.lang === 'bn' ? 'সিনিয়র সিটিজেন (২০%)' : 'Senior Citizen (20%)') }}
+                </span>
+                <span class="font-mono">-{{ formatMoney(orders.discountAmount) }}</span>
               </div>
               <div class="row justify-between text-body2 q-py-xs">
                 <span class="text-grey-7">{{ locale.t('orders.vat', { rate: Math.round(taxRate * 100) }) }}</span>

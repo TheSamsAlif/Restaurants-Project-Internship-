@@ -156,6 +156,14 @@
                 <span class="text-grey-6">{{ locale.t('invoices.subtotal') }}:</span>
                 <span class="font-mono">{{ formatMoney(order.subtotal) }}</span>
               </div>
+              <div v-if="order.discountAmount > 0" class="row justify-between text-body2 text-positive text-weight-bold">
+                <span>
+                  {{ order.discountType === 'student' ? (locale.lang === 'bn' ? 'শিক্ষার্থী ছাড় (১০%)' : 'Student Discount (10%)') :
+                     order.discountType === 'couple' ? (locale.lang === 'bn' ? 'কাপল অফার (১৫%)' : 'Couple Offer (15%)') :
+                     (locale.lang === 'bn' ? 'সিনিয়র সিটিজেন ছাড় (২০%)' : 'Senior Citizen Discount (20%)') }}:
+                </span>
+                <span class="font-mono">-{{ formatMoney(order.discountAmount) }}</span>
+              </div>
               <div class="row justify-between text-body2">
                 <span class="text-grey-6">{{ locale.t('invoices.vat') }} ({{ Math.round((order.taxRate || 0.05) * 100) }}%):</span>
                 <span class="font-mono">{{ formatMoney(order.tax) }}</span>

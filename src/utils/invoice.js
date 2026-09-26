@@ -54,6 +54,12 @@ export function buildInvoiceText(order, restaurant) {
 
   out.push(rule())
   out.push(pair('Subtotal', formatMoneyPlain(order.subtotal)))
+  if (order.discountAmount > 0) {
+    const dLabel = order.discountType === 'student' ? 'Discount (Student 10%)' :
+                   order.discountType === 'couple' ? 'Discount (Couple 15%)' :
+                   order.discountType === 'senior' ? 'Discount (Senior 20%)' : 'Discount'
+    out.push(pair(dLabel, `-${formatMoneyPlain(order.discountAmount)}`))
+  }
   out.push(pair(taxLabel(order), formatMoneyPlain(order.tax)))
   out.push(rule('='))
   out.push(pair('TOTAL', formatMoneyPlain(order.total)))
@@ -123,6 +129,7 @@ function buildInvoiceHtml(order, restaurant) {
   ${rows}
   <hr class="rule" />
   <div class="row"><span>Subtotal</span><span>${esc(formatMoneyPlain(order.subtotal))}</span></div>
+  ${order.discountAmount > 0 ? `<div class="row" style="color: #2e7d32; font-weight: bold;"><span>${esc(order.discountType === 'student' ? 'Discount (Student 10%)' : order.discountType === 'couple' ? 'Discount (Couple 15%)' : order.discountType === 'senior' ? 'Discount (Senior 20%)' : 'Discount')}</span><span>-${esc(formatMoneyPlain(order.discountAmount))}</span></div>` : ''}
   <div class="row"><span>${esc(taxLabel(order))}</span><span>${esc(formatMoneyPlain(order.tax))}</span></div>
   <hr class="rule solid" />
   <div class="row total"><span>TOTAL</span><span>${esc(formatMoneyPlain(order.total))}</span></div>
@@ -220,6 +227,12 @@ function drawSlip(doc, order, restaurant, width) {
   dashed()
 
   row('Subtotal', formatMoneyPlain(order.subtotal))
+  if (order.discountAmount > 0) {
+    const dLabel = order.discountType === 'student' ? 'Discount (Student 10%)' :
+                   order.discountType === 'couple' ? 'Discount (Couple 15%)' :
+                   order.discountType === 'senior' ? 'Discount (Senior 20%)' : 'Discount'
+    row(dLabel, `-${formatMoneyPlain(order.discountAmount)}`)
+  }
   row(taxLabel(order), formatMoneyPlain(order.tax))
   y += 0.5
   doc.setFont('courier', 'bold')

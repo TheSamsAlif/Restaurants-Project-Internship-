@@ -21,16 +21,24 @@ export const useOrderStore = defineStore('orders', {
     orders: [], // every placed order
     seq: 0, // last invoice number
     cart: [], // current order items
+    discountType: 'none', // 'none' | 'student' | 'couple' | 'senior'
+    discountRate: 0, // 0, 0.10, 0.15, 0.20
   }),
 
   getters: {
     cartCount: (state) => state.cart.reduce((n, line) => n + line.qty, 0),
     subtotal: (state) => round2(state.cart.reduce((sum, l) => sum + l.price * l.qty, 0)),
+    discountAmount() {
+      return round2(this.subtotal * (this.discountRate || 0))
+    },
+    discountedSubtotal() {
+      return round2(Math.max(0, this.subtotal - this.discountAmount))
+    },
     tax() {
-      return round2(this.subtotal * TAX_RATE)
+      return round2(this.discountedSubtotal * TAX_RATE)
     },
     total() {
-      return round2(this.subtotal + this.tax)
+      return round2(this.discountedSubtotal + this.tax)
     },
     qtyInCart: (state) => (itemId) => state.cart.find((l) => l.itemId === itemId)?.qty ?? 0,
 
@@ -148,8 +156,21 @@ export const useOrderStore = defineStore('orders', {
       this.cart = this.cart.filter((l) => l.itemId !== itemId)
     },
 
+    setDiscount(type) {
+      this.discountType = type
+      if (type === 'student') this.discountRate = 0.10
+      else if (type === 'couple') this.discountRate = 0.15
+      else if (type === 'senior') this.discountRate = 0.20
+      else {
+        this.discountType = 'none'
+        this.discountRate = 0
+      }
+    },
+
     clearCart() {
       this.cart = []
+      this.discountType = 'none'
+      this.discountRate = 0
     },
 
     placeOrder({ customerName, phone, table, seat, branch, restaurant }) {
@@ -177,6 +198,10 @@ export const useOrderStore = defineStore('orders', {
         restaurant: restaurant || null,
         lines: this.cart.map((l) => ({ ...l, amount: round2(l.price * l.qty) })),
         subtotal: this.subtotal,
+        discountType: this.discountType,
+        discountRate: this.discountRate,
+        discountAmount: this.discountAmount,
+        discountedSubtotal: this.discountedSubtotal,
         taxRate: TAX_RATE,
         tax: this.tax,
         total: this.total,
@@ -185,7 +210,7 @@ export const useOrderStore = defineStore('orders', {
         completedAt: null,
       }
       this.orders.push(order)
-      this.cart = []
+      this.clearCart()
       return { ok: true, order }
     },
 

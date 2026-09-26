@@ -57,16 +57,24 @@
     <!-- Summary -->
     <div class="column q-gutter-y-xs text-body2">
       <div class="row justify-between">
-        <span class="text-grey-7">Subtotal:</span>
+        <span class="text-grey-7">{{ locale.t('invoices.subtotal') }}:</span>
         <span class="font-mono">{{ formatMoney(order.subtotal) }}</span>
       </div>
+      <div v-if="order.discountAmount > 0" class="row justify-between text-positive text-weight-bold">
+        <span>
+          {{ order.discountType === 'student' ? (locale.lang === 'bn' ? 'শিক্ষার্থী ছাড় (১০%)' : 'Student (10%)') :
+             order.discountType === 'couple' ? (locale.lang === 'bn' ? 'কাপল অফার (১৫%)' : 'Couple (15%)') :
+             (locale.lang === 'bn' ? 'সিনিয়র সিটিজেন (২০%)' : 'Senior (20%)') }}:
+        </span>
+        <span class="font-mono">-{{ formatMoney(order.discountAmount) }}</span>
+      </div>
       <div class="row justify-between">
-        <span class="text-grey-7">VAT ({{ Math.round((order.taxRate || 0.05) * 100) }}%):</span>
+        <span class="text-grey-7">{{ locale.t('invoices.vat') }} ({{ Math.round((order.taxRate || 0.05) * 100) }}%):</span>
         <span class="font-mono">{{ formatMoney(order.tax) }}</span>
       </div>
       <q-separator class="q-my-xs" />
       <div class="row justify-between text-h6 text-weight-bolder text-primary">
-        <span>TOTAL:</span>
+        <span>{{ locale.t('invoices.total') }}:</span>
         <span class="font-mono">{{ formatMoney(order.total) }}</span>
       </div>
     </div>
