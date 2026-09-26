@@ -1,0 +1,20 @@
+// Design tokens for Resto POS.
+// Light mode reads like a printed order ticket; dark mode reads like a kitchen chalkboard.
+// See app.scss for the full custom-property set these feed into.
+
+$primary: #a8432a; // paprika - primary actions
+$secondary: #3f6652; // basil - secondary actions, positive-leaning UI
+$accent: #c08a22; // saffron - highlights, badges
+
+$dark: #222d27;
+$dark-page: #1b2420;
+
+$positive: #3f6652;
+$negative: #b3261e;
+$info: #3b6b88;
+$warning: #c08a22;
+
+$typography-font-family: 'IBM Plex Sans', -apple-system, sans-serif;
+
+// Generous, calm corners on functional surfaces (cards get their own shape in app.scss).
+$generic-border-radius: 8px;

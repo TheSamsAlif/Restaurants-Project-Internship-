@@ -1,0 +1,310 @@
+// =============================================================
+// Resto POS — design tokens
+// Light = a printed order ticket. Dark = a kitchen chalkboard.
+// =============================================================
+
+:root {
+  --font-display: 'Bricolage Grotesque Variable', 'Bricolage Grotesque', 'IBM Plex Sans', sans-serif;
+  --font-body: 'IBM Plex Sans', -apple-system, sans-serif;
+  --font-mono: 'IBM Plex Mono', 'SFMono-Regular', monospace;
+
+  --bg: #f7f4ec;
+  --surface: #ffffff;
+  --surface-sunken: #efeadd;
+  --ink: #221f1a;
+  --ink-soft: #6d6559;
+  --ink-faint: #a39a8b;
+  --line: #e1dccc;
+  --line-strong: #cfc7b2;
+
+  --paprika: #a8432a;
+  --paprika-ink: #ffffff;
+  --basil: #3f6652;
+  --basil-tint: #e3ece6;
+  --saffron: #c08a22;
+  --saffron-tint: #f5ecd6;
+  --plum: #75406f;
+  --plum-tint: #f0e4ee;
+  --petrol: #2c6874;
+  --petrol-tint: #e1edee;
+  --clay: #b8544a;
+  --clay-tint: #f7e6e3;
+
+  --shadow-card: 0 1px 2px rgba(34, 31, 26, 0.06), 0 6px 16px -8px rgba(34, 31, 26, 0.14);
+  --shadow-pop: 0 10px 30px -10px rgba(34, 31, 26, 0.28);
+
+  // A translucent version of --surface, for the auth glass card only.
+  --surface-glass: rgba(255, 255, 255, 0.66);
+  --surface-glass-border: rgba(255, 255, 255, 0.5);
+}
+
+body.body--dark {
+  --bg: #1b2420;
+  --surface: #222d27;
+  --surface-sunken: #19211d;
+  --ink: #ede8dc;
+  --ink-soft: #a9a99c;
+  --ink-faint: #74796e;
+  --line: #344038;
+  --line-strong: #435043;
+
+  --paprika: #e0855a;
+  --paprika-ink: #1b2420;
+  --basil: #7fb79a;
+  --basil-tint: #26352c;
+  --saffron: #e2b25c;
+  --saffron-tint: #35301f;
+  --plum: #c891c2;
+  --plum-tint: #332937;
+  --petrol: #7fc2cf;
+  --petrol-tint: #1f3236;
+  --clay: #e0897d;
+  --clay-tint: #3a2925;
+
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.35), 0 10px 24px -10px rgba(0, 0, 0, 0.5);
+  --shadow-pop: 0 16px 40px -12px rgba(0, 0, 0, 0.6);
+
+  --surface-glass: rgba(34, 45, 39, 0.62);
+  --surface-glass-border: rgba(237, 232, 220, 0.1);
+}
+
+html,
+body {
+  background: var(--bg);
+  color: var(--ink);
+}
+
+body {
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+// -------------------------------------------------------------
+// Type
+// -------------------------------------------------------------
+.font-display {
+  font-family: var(--font-display);
+}
+.font-mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+h1,
+h2,
+h3,
+.text-h1,
+.text-h2,
+.text-h3,
+.text-h4 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.page-title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.7rem;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+  line-height: 1.15;
+}
+
+.page-subtitle {
+  color: var(--ink-soft);
+  font-size: 0.92rem;
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--ink-faint);
+  letter-spacing: 0.02em;
+}
+
+// -------------------------------------------------------------
+// Surfaces
+// -------------------------------------------------------------
+.surface-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  box-shadow: var(--shadow-card);
+}
+
+.hairline {
+  border-color: var(--line) !important;
+}
+
+// Subtle glass card used for the Login / Registration forms (Task 1).
+// Kept as its own utility rather than changing .surface-card, so every other
+// card in the app (dialogs, item chits, etc.) is completely untouched.
+.glass-card {
+  background: var(--surface-glass);
+  border: 1px solid var(--surface-glass-border);
+  border-radius: 16px;
+  box-shadow: var(--shadow-pop);
+  backdrop-filter: blur(18px) saturate(150%);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+}
+
+.q-page {
+  background: var(--bg);
+}
+
+// -------------------------------------------------------------
+// Ticket / chit motifs — the recurring visual idea of the app
+// -------------------------------------------------------------
+
+// A perforated edge, like a chit torn from a printer roll.
+@mixin ticket-perforation($side: top) {
+  background-image: radial-gradient(circle, var(--bg) 2.6px, transparent 2.7px);
+  background-size: 13px 13px;
+  background-repeat: repeat-x;
+  @if $side == top {
+    background-position: 4px -6.5px;
+  } @else {
+    background-position: 4px calc(100% + 6.5px);
+  }
+}
+
+.chit {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 7px;
+    @include ticket-perforation(top);
+  }
+}
+
+.chit-tone-bar {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 5px;
+}
+
+// Dashed rule reminiscent of receipt separators.
+.receipt-rule {
+  border: none;
+  border-top: 1.5px dashed var(--line-strong);
+  margin: 10px 0;
+}
+
+// -------------------------------------------------------------
+// Category tones — stable colour per menu category (see utils/tone.js)
+// -------------------------------------------------------------
+.tone-0 {
+  --tone: var(--paprika);
+  --tone-tint: var(--clay-tint);
+}
+.tone-1 {
+  --tone: var(--basil);
+  --tone-tint: var(--basil-tint);
+}
+.tone-2 {
+  --tone: var(--saffron);
+  --tone-tint: var(--saffron-tint);
+}
+.tone-3 {
+  --tone: var(--plum);
+  --tone-tint: var(--plum-tint);
+}
+.tone-4 {
+  --tone: var(--petrol);
+  --tone-tint: var(--petrol-tint);
+}
+.tone-5 {
+  --tone: var(--clay);
+  --tone-tint: var(--clay-tint);
+}
+
+.tone-chip {
+  background: var(--tone-tint);
+  color: var(--tone);
+  border-radius: 6px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  padding: 2px 9px;
+  display: inline-block;
+}
+
+.tone-bar {
+  background: var(--tone);
+}
+
+.tone-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--tone);
+  display: inline-block;
+}
+
+// -------------------------------------------------------------
+// Buttons — square-ish, ticket-stamp feel rather than pill/rounded default
+// -------------------------------------------------------------
+.q-btn {
+  font-family: var(--font-body);
+  font-weight: 600;
+  letter-spacing: 0;
+}
+.q-btn.stamp {
+  border-radius: 6px;
+}
+
+// -------------------------------------------------------------
+// Scrollbars (quiet, on-brand)
+// -------------------------------------------------------------
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--line-strong);
+  border-radius: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+// -------------------------------------------------------------
+// Utility
+// -------------------------------------------------------------
+.ink {
+  color: var(--ink);
+}
+.ink-soft {
+  color: var(--ink-soft) !important;
+}
+.ink-faint {
+  color: var(--ink-faint) !important;
+}
+.bg-surface {
+  background: var(--surface);
+}
+.bg-sunken {
+  background: var(--surface-sunken);
+}
+
+.clickable-row {
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+  &:hover {
+    background: var(--surface-sunken);
+  }
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}
