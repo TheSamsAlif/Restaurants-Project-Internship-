@@ -3,7 +3,7 @@
     <q-card class="surface-card form-card" style="width: 520px; max-width: 95vw; border-radius: 16px;">
       <q-card-section class="row items-center q-pb-none">
         <div class="text-h6 text-weight-bolder">
-          {{ editing ? 'Edit Restaurant Info' : 'Add New Restaurant' }}
+          {{ editing ? locale.t('setup.editTitle') : locale.t('setup.newTitle') }}
         </div>
         <q-space />
         <q-btn flat round dense icon="sym_o_close" v-close-popup />
@@ -25,7 +25,7 @@
                 class="q-px-md"
                 color="primary"
                 icon="sym_o_upload"
-                label="Upload Logo"
+                :label="locale.t('setup.uploadLogo')"
                 @click="fileInput?.click()"
               />
               <q-btn
@@ -38,7 +38,7 @@
                 class="q-ml-sm"
                 @click="logo = ''"
               >
-                <q-tooltip>Remove logo</q-tooltip>
+                <q-tooltip>{{ locale.t('setup.removeLogo') }}</q-tooltip>
               </q-btn>
               <input
                 ref="fileInput"
@@ -47,7 +47,7 @@
                 class="hidden"
                 @change="onLogoChange"
               />
-              <div class="text-caption text-grey-6 q-mt-xs">PNG or JPG up to 2MB</div>
+              <div class="text-caption text-grey-6 q-mt-xs">{{ locale.t('setup.logoHint') }}</div>
             </div>
           </div>
 
@@ -55,7 +55,7 @@
             v-model="name"
             outlined
             dense
-            label="Restaurant Name *"
+            :label="locale.t('setup.nameLabel')"
             :rules="[required('Restaurant name is required')]"
             lazy-rules
           >
@@ -68,7 +68,7 @@
             dense
             type="textarea"
             autogrow
-            label="Address *"
+            :label="locale.t('setup.addressLabel')"
             :rules="[required('Address is required')]"
             lazy-rules
           >
@@ -79,7 +79,7 @@
             v-model="phone"
             outlined
             dense
-            label="Phone Number *"
+            :label="locale.t('setup.phoneLabel')"
             :rules="[required('Phone number is required'), phoneRule]"
             lazy-rules
           >
@@ -94,8 +94,8 @@
             use-input
             use-chips
             new-value-mode="add-unique"
-            label="Branch Name(s)"
-            hint="Type a branch name and press Enter to add"
+            :label="locale.t('setup.branchesLabel')"
+            :hint="locale.t('setup.branchesHint')"
           >
             <template #prepend><q-icon name="sym_o_apartment" /></template>
           </q-select>
@@ -111,7 +111,7 @@
               unelevated
               color="primary"
               class="q-px-lg text-weight-bold"
-              :label="editing ? 'Save Changes' : 'Create Restaurant'"
+              :label="editing ? locale.t('setup.saveChanges') : locale.t('setup.createRestaurant')"
             />
           </q-card-actions>
         </q-form>
@@ -123,6 +123,7 @@
 <script setup>
 import { ref, watch } from 'vue'
 import { Notify } from 'quasar'
+import { useLocaleStore } from '@/stores/locale'
 import { required, phoneRule } from '@/utils/validators'
 
 const props = defineProps({
@@ -130,6 +131,8 @@ const props = defineProps({
   restaurant: { type: Object, default: null },
 })
 const emit = defineEmits(['update:modelValue', 'close', 'submit'])
+
+const locale = useLocaleStore()
 
 const open = ref(props.modelValue)
 watch(() => props.modelValue, (v) => (open.value = v))

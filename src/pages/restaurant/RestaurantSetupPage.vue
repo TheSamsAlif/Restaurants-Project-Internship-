@@ -3,17 +3,21 @@
     <!-- Header section -->
     <div class="row items-center justify-between q-mb-lg" style="gap: 12px">
       <div>
-        <div class="text-caption text-primary text-weight-bold text-uppercase">Step 2: Configuration</div>
-        <div class="text-h4 text-weight-bolder">My Restaurant Setup</div>
+        <div class="text-caption text-primary text-weight-bold text-uppercase">
+          {{ locale.t('setup.badge') }}
+        </div>
+        <div class="text-h4 text-weight-bolder">
+          {{ locale.t('setup.title') }}
+        </div>
         <div class="text-body2 text-grey-6 q-mt-xs">
-          Manage your restaurant profile, branches, and contact information.
+          {{ locale.t('setup.subtitle') }}
         </div>
       </div>
       <q-btn
         unelevated
         color="primary"
         icon="sym_o_add"
-        label="Add Restaurant"
+        :label="locale.t('setup.addBtn')"
         class="text-weight-bold"
         @click="openAdd"
       />
@@ -22,14 +26,14 @@
     <!-- Explicit Navigation Buttons as required by Step 2 in assignment PDF -->
     <q-card flat bordered class="q-pa-md q-mb-xl bg-surface">
       <div class="text-subtitle2 text-weight-bold text-grey-8 q-mb-sm">
-        Quick Navigation:
+        {{ locale.t('setup.quickNav') }}
       </div>
       <div class="row q-gutter-sm">
         <q-btn
           outline
           color="primary"
           icon="sym_o_restaurant_menu"
-          label="All Items Page"
+          :label="locale.t('setup.allItems')"
           to="/app/items"
           class="text-weight-bold"
         />
@@ -37,7 +41,7 @@
           outline
           color="secondary"
           icon="sym_o_point_of_sale"
-          label="Orders Page"
+          :label="locale.t('setup.ordersPage')"
           to="/app/orders"
           class="text-weight-bold"
         />
@@ -45,7 +49,7 @@
           outline
           color="accent"
           icon="sym_o_receipt_long"
-          label="Invoice Page"
+          :label="locale.t('setup.invoicePage')"
           to="/app/invoices"
           class="text-weight-bold"
         />
@@ -55,15 +59,15 @@
     <!-- Empty State -->
     <div v-if="!restaurants.length" class="text-center q-pa-xl surface-card empty-card">
       <q-icon name="sym_o_storefront" size="56px" color="grey-5" class="q-mb-md" />
-      <div class="text-h6 text-weight-bold">No Restaurant Configured</div>
+      <div class="text-h6 text-weight-bold">{{ locale.t('setup.noRestaurant') }}</div>
       <div class="text-body2 text-grey-6 q-my-sm">
-        Add your restaurant details to start managing menu items and orders.
+        {{ locale.t('setup.noRestaurantDesc') }}
       </div>
       <q-btn
         unelevated
         color="primary"
         icon="sym_o_add"
-        label="Set Up Restaurant"
+        :label="locale.t('setup.setUpBtn')"
         class="q-mt-md"
         @click="openAdd"
       />
@@ -91,7 +95,7 @@
                   <q-badge
                     v-if="r.id === store.activeId"
                     color="positive"
-                    label="Active"
+                    :label="locale.t('setup.active')"
                     class="q-px-sm text-weight-bold"
                   />
                 </div>
@@ -106,7 +110,7 @@
                 </div>
 
                 <div class="row items-center q-mt-sm" style="gap: 6px; flex-wrap: wrap;">
-                  <span class="text-caption text-weight-bold text-grey-6">Branches:</span>
+                  <span class="text-caption text-weight-bold text-grey-6">{{ locale.t('setup.branches') }}</span>
                   <q-chip
                     v-for="branch in r.branches"
                     :key="branch"
@@ -118,7 +122,7 @@
                     {{ branch }}
                   </q-chip>
                   <span v-if="!r.branches || !r.branches.length" class="text-caption text-grey-5">
-                    No branches specified
+                    Main Branch
                   </span>
                 </div>
               </div>
@@ -135,7 +139,7 @@
                 dense
                 no-caps
                 color="primary"
-                label="Set as Active"
+                :label="locale.t('setup.setActive')"
                 class="text-weight-bold"
                 @click="store.setActive(r.id)"
               />
@@ -149,7 +153,7 @@
                 icon="sym_o_edit"
                 @click="openEdit(r)"
               >
-                <q-tooltip>Edit Restaurant</q-tooltip>
+                <q-tooltip>Edit</q-tooltip>
               </q-btn>
               <q-btn
                 flat
@@ -159,7 +163,7 @@
                 icon="sym_o_delete"
                 @click="confirmDelete(r)"
               >
-                <q-tooltip>Delete Restaurant</q-tooltip>
+                <q-tooltip>Delete</q-tooltip>
               </q-btn>
             </div>
           </q-card-actions>
@@ -199,9 +203,11 @@
 import { computed, ref } from 'vue'
 import { Notify } from 'quasar'
 import { useRestaurantStore } from '@/stores/restaurants'
+import { useLocaleStore } from '@/stores/locale'
 import RestaurantFormDialog from '@/components/restaurant/RestaurantFormDialog.vue'
 
 const store = useRestaurantStore()
+const locale = useLocaleStore()
 const restaurants = computed(() => store.list)
 
 const dialogOpen = ref(false)

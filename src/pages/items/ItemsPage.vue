@@ -3,26 +3,29 @@
     <!-- Header -->
     <div class="row items-center justify-between q-mb-lg" style="gap: 12px">
       <div>
-        <div class="text-caption text-primary text-weight-bold text-uppercase">Step 3: Menu Management</div>
-        <div class="text-h4 text-weight-bolder">All Restaurant Items</div>
+        <div class="text-caption text-primary text-weight-bold text-uppercase">
+          {{ locale.t('items.badge') }}
+        </div>
+        <div class="text-h4 text-weight-bolder">
+          {{ locale.t('items.title') }}
+        </div>
         <div class="text-body2 text-grey-6 q-mt-xs">
-          Showing {{ filtered.length }} of {{ menu.items.length }} menu items
+          {{ locale.t('items.showing', { count: filtered.length, total: menu.items.length }) }}
         </div>
       </div>
       <div class="row q-gutter-sm">
         <q-btn
-          v-if="!menu.items.length"
           outline
           color="secondary"
           icon="sym_o_dataset"
-          label="Load Sample Menu"
+          :label="locale.t('items.loadSample')"
           @click="menu.addSamples()"
         />
         <q-btn
           unelevated
           color="primary"
           icon="sym_o_add"
-          label="Add New Item"
+          :label="locale.t('items.addItem')"
           class="text-weight-bold"
           @click="openAdd"
         />
@@ -36,7 +39,7 @@
           v-model="search"
           outlined
           dense
-          placeholder="Search items by name..."
+          :placeholder="locale.t('items.searchPlaceholder')"
           clearable
         >
           <template #prepend><q-icon name="sym_o_search" /></template>
@@ -50,7 +53,7 @@
           emit-value
           map-options
           :options="filterOptions"
-          label="Filter by Category"
+          :label="locale.t('items.filterLabel')"
         >
           <template #prepend><q-icon name="sym_o_filter_alt" /></template>
         </q-select>
@@ -60,13 +63,13 @@
     <!-- Empty State -->
     <div v-if="!menu.items.length" class="text-center q-pa-xl surface-card empty-card">
       <q-icon name="sym_o_restaurant_menu" size="56px" color="grey-5" class="q-mb-md" />
-      <div class="text-h6 text-weight-bold">No Menu Items Yet</div>
+      <div class="text-h6 text-weight-bold">{{ locale.t('items.emptyTitle') }}</div>
       <div class="text-body2 text-grey-6 q-my-sm">
-        Add your restaurant's food and beverage items or load a sample starter menu.
+        {{ locale.t('items.emptyDesc') }}
       </div>
       <div class="row justify-center q-gutter-sm q-mt-md">
-        <q-btn unelevated color="primary" icon="sym_o_add" label="Add New Item" @click="openAdd" />
-        <q-btn outline color="secondary" icon="sym_o_dataset" label="Load Sample Menu" @click="menu.addSamples()" />
+        <q-btn unelevated color="primary" icon="sym_o_add" :label="locale.t('items.addItem')" @click="openAdd" />
+        <q-btn outline color="secondary" icon="sym_o_dataset" :label="locale.t('items.loadSample')" @click="menu.addSamples()" />
       </div>
     </div>
 
@@ -77,32 +80,58 @@
       <div class="text-caption">Try adjusting your search query or filter</div>
     </div>
 
-    <!-- Items in Card Format as strictly required by Step 3 -->
+    <!-- Items in Card Format WITH FOOD PICTURES -->
     <div v-else class="row q-col-gutter-md">
       <div v-for="it in filtered" :key="it.id" class="col-12 col-sm-6 col-md-4 col-lg-3">
-        <q-card flat bordered class="item-card full-height column justify-between">
-          <q-card-section>
-            <div class="row items-start justify-between no-wrap q-mb-sm">
-              <div class="text-subtitle1 text-weight-bolder ellipsis col q-pr-xs">{{ it.name }}</div>
-              <div class="row no-wrap q-gutter-xs">
-                <q-btn flat round dense size="sm" color="primary" icon="sym_o_edit" @click="openEdit(it)">
-                  <q-tooltip>Edit Item</q-tooltip>
-                </q-btn>
-                <q-btn flat round dense size="sm" color="negative" icon="sym_o_delete" @click="confirmDelete(it)">
-                  <q-tooltip>Delete Item</q-tooltip>
-                </q-btn>
-              </div>
+        <q-card flat bordered class="item-card full-height column justify-between overflow-hidden">
+          <div>
+            <!-- Item Picture -->
+            <div class="image-wrapper relative-position">
+              <q-img
+                :src="it.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=80'"
+                style="height: 150px;"
+                fit="cover"
+              >
+                <template #error>
+                  <div class="absolute-full flex flex-center bg-grey-3 text-grey-7">
+                    <q-icon name="sym_o_restaurant" size="36px" />
+                  </div>
+                </template>
+              </q-img>
+              <!-- Category Chip over image -->
+              <q-chip
+                dense
+                color="primary"
+                text-color="white"
+                size="sm"
+                class="absolute-top-left q-ma-sm shadow-2 text-weight-bold"
+              >
+                {{ locale.getItemCategory(it) }}
+              </q-chip>
             </div>
 
-            <q-chip dense color="primary" text-color="white" size="sm" class="q-mb-sm">
-              {{ it.category }}
-            </q-chip>
-          </q-card-section>
+            <!-- Card Content -->
+            <q-card-section class="q-pt-sm q-pb-none">
+              <div class="row items-start justify-between no-wrap q-mb-xs">
+                <div class="text-subtitle1 text-weight-bolder ellipsis col q-pr-xs" :title="locale.getItemName(it)">
+                  {{ locale.getItemName(it) }}
+                </div>
+                <div class="row no-wrap q-gutter-xs">
+                  <q-btn flat round dense size="sm" color="primary" icon="sym_o_edit" @click="openEdit(it)">
+                    <q-tooltip>Edit</q-tooltip>
+                  </q-btn>
+                  <q-btn flat round dense size="sm" color="negative" icon="sym_o_delete" @click="confirmDelete(it)">
+                    <q-tooltip>Delete</q-tooltip>
+                  </q-btn>
+                </div>
+              </div>
+            </q-card-section>
+          </div>
 
           <q-card-section class="q-pt-none">
             <q-separator class="q-mb-sm" />
             <div class="row items-center justify-between">
-              <span class="text-caption text-grey-6">Price:</span>
+              <span class="text-caption text-grey-6">{{ locale.t('items.price') }}</span>
               <span class="text-h6 text-weight-bolder font-mono text-primary">
                 {{ formatMoney(it.price) }}
               </span>
@@ -123,7 +152,7 @@
           <div class="text-h6 text-weight-bold">Confirm Deletion</div>
         </q-card-section>
         <q-card-section class="q-pt-none text-grey-7">
-          Are you sure you want to delete <strong>{{ toDelete?.name }}</strong>?
+          Are you sure you want to delete <strong>{{ toDelete ? locale.getItemName(toDelete) : '' }}</strong>?
         </q-card-section>
         <q-card-actions align="right">
           <q-btn flat label="Cancel" v-close-popup />
@@ -138,22 +167,28 @@
 import { computed, ref } from 'vue'
 import { Notify } from 'quasar'
 import { useMenuStore } from '@/stores/menu'
+import { useLocaleStore } from '@/stores/locale'
 import { formatMoney } from '@/utils/money'
 import ItemFormDialog from '@/components/items/ItemFormDialog.vue'
 
 const menu = useMenuStore()
+const locale = useLocaleStore()
+
 const search = ref('')
 const categoryFilter = ref('all')
 
 const filterOptions = computed(() => [
-  { label: 'All Categories', value: 'all' },
+  { label: locale.t('items.allCategories'), value: 'all' },
   ...menu.usedCategories.map((c) => ({ label: c, value: c })),
 ])
 
 const filtered = computed(() => {
   const needle = search.value?.trim().toLowerCase() ?? ''
   return menu.items.filter((it) => {
-    const matchesSearch = !needle || it.name.toLowerCase().includes(needle)
+    const matchesSearch =
+      !needle ||
+      it.name.toLowerCase().includes(needle) ||
+      (it.nameBn && it.nameBn.toLowerCase().includes(needle))
     const matchesCategory = categoryFilter.value === 'all' || it.category === categoryFilter.value
     return matchesSearch && matchesCategory
   })

@@ -42,6 +42,19 @@
           style="min-width: 150px"
         />
 
+        <!-- Language Toggle (EN / বাংলা) -->
+        <q-btn
+          flat
+          dense
+          no-caps
+          class="q-mr-sm text-weight-bolder lang-toggle-btn"
+          @click="locale.toggle()"
+        >
+          <q-icon name="sym_o_translate" size="18px" class="q-mr-xs" />
+          <span style="font-size: 13px;">{{ locale.lang === 'en' ? 'বাংলা' : 'English' }}</span>
+          <q-tooltip>{{ locale.t('nav.langToggle') }}</q-tooltip>
+        </q-btn>
+
         <!-- Light / Dark Mode Toggle (Quasar $q.dark) -->
         <q-btn
           flat
@@ -51,12 +64,12 @@
           class="q-mr-sm"
           @click="toggleTheme"
         >
-          <q-tooltip>{{ $q.dark.isActive ? 'Switch to Light Mode' : 'Switch to Dark Mode' }}</q-tooltip>
+          <q-tooltip>{{ $q.dark.isActive ? locale.t('nav.lightMode') : locale.t('nav.darkMode') }}</q-tooltip>
         </q-btn>
 
         <!-- Logout Button -->
         <q-btn flat round dense icon="sym_o_logout" color="negative" @click="confirmLogout = true">
-          <q-tooltip>Sign Out</q-tooltip>
+          <q-tooltip>{{ locale.t('nav.logout') }}</q-tooltip>
         </q-btn>
       </q-toolbar>
     </q-header>
@@ -71,7 +84,9 @@
       class="bg-surface text-ink"
     >
       <div class="q-pa-md">
-        <div class="text-caption text-primary text-weight-bold text-uppercase">Navigation</div>
+        <div class="text-caption text-primary text-weight-bold text-uppercase">
+          {{ locale.lang === 'bn' ? 'নেভিগেশন মেনু' : 'Navigation' }}
+        </div>
       </div>
 
       <q-list padding class="q-pt-none">
@@ -120,14 +135,16 @@
       <q-card style="min-width: 300px; border-radius: 12px;">
         <q-card-section class="row items-center" style="gap: 12px">
           <q-avatar icon="sym_o_logout" color="negative" text-color="white" />
-          <div class="text-h6 text-weight-bold">Sign Out</div>
+          <div class="text-h6 text-weight-bold">
+            {{ locale.lang === 'bn' ? 'লগআউট নিশ্চিতকরণ' : 'Sign Out' }}
+          </div>
         </q-card-section>
         <q-card-section class="q-pt-none text-grey-7">
-          Are you sure you want to end your session?
+          {{ locale.lang === 'bn' ? 'আপনি কি আপনার সেশন শেষ করে লগআউট করতে চান?' : 'Are you sure you want to end your session?' }}
         </q-card-section>
         <q-card-actions align="right">
-          <q-btn flat label="Cancel" v-close-popup />
-          <q-btn unelevated color="negative" label="Sign Out" v-close-popup @click="onLogout" />
+          <q-btn flat :label="locale.lang === 'bn' ? 'বাতিল' : 'Cancel'" v-close-popup />
+          <q-btn unelevated color="negative" :label="locale.lang === 'bn' ? 'লগআউট' : 'Sign Out'" v-close-popup @click="onLogout" />
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -141,12 +158,14 @@ import { useQuasar } from 'quasar'
 import { useAuthStore } from '@/stores/auth'
 import { useRestaurantStore } from '@/stores/restaurants'
 import { useThemeStore } from '@/stores/theme'
+import { useLocaleStore } from '@/stores/locale'
 
 const $q = useQuasar()
 const router = useRouter()
 const auth = useAuthStore()
 const restaurantStore = useRestaurantStore()
 const theme = useThemeStore()
+const locale = useLocaleStore()
 
 const drawer = ref(true)
 const confirmLogout = ref(false)
@@ -165,12 +184,32 @@ watch(
   { immediate: true },
 )
 
-const links = [
-  { to: '/app/restaurant', icon: 'sym_o_storefront', label: 'Restaurant Setup', shortLabel: 'Setup' },
-  { to: '/app/items', icon: 'sym_o_restaurant_menu', label: 'All Items', shortLabel: 'Items' },
-  { to: '/app/orders', icon: 'sym_o_point_of_sale', label: 'New Order', shortLabel: 'Orders' },
-  { to: '/app/invoices', icon: 'sym_o_receipt_long', label: 'Invoices', shortLabel: 'Invoices' },
-]
+const links = computed(() => [
+  {
+    to: '/app/restaurant',
+    icon: 'sym_o_storefront',
+    label: locale.t('nav.setup'),
+    shortLabel: locale.lang === 'bn' ? 'সেটআপ' : 'Setup',
+  },
+  {
+    to: '/app/items',
+    icon: 'sym_o_restaurant_menu',
+    label: locale.t('nav.items'),
+    shortLabel: locale.lang === 'bn' ? 'মেনু' : 'Items',
+  },
+  {
+    to: '/app/orders',
+    icon: 'sym_o_point_of_sale',
+    label: locale.t('nav.orders'),
+    shortLabel: locale.lang === 'bn' ? 'অর্ডার' : 'Orders',
+  },
+  {
+    to: '/app/invoices',
+    icon: 'sym_o_receipt_long',
+    label: locale.t('nav.invoices'),
+    shortLabel: locale.lang === 'bn' ? 'ইনভয়েস' : 'Invoices',
+  },
+])
 
 function toggleTheme() {
   theme.toggle()

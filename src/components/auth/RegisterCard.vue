@@ -3,8 +3,12 @@
     <div class="row items-center no-wrap q-mb-md" style="gap: 8px">
       <q-btn flat round dense icon="sym_o_arrow_back" color="primary" @click="$emit('back')" />
       <div>
-        <div class="text-caption text-primary text-weight-bold text-uppercase">New Account</div>
-        <div class="text-h5 text-weight-bolder">Create Account</div>
+        <div class="text-caption text-primary text-weight-bold text-uppercase">
+          {{ locale.t('auth.newAccount') }}
+        </div>
+        <div class="text-h5 text-weight-bolder">
+          {{ locale.t('auth.createAccount') }}
+        </div>
       </div>
     </div>
 
@@ -13,7 +17,7 @@
         v-model="name"
         outlined
         dense
-        label="Full Name"
+        :label="locale.t('auth.fullName') + ' *'"
         :rules="[required('Full Name is required')]"
         lazy-rules
       >
@@ -24,7 +28,7 @@
         v-model="email"
         outlined
         dense
-        label="Email Address"
+        :label="locale.t('auth.email') + ' *'"
         type="email"
         :rules="[required('Email is required'), emailRule]"
         lazy-rules
@@ -36,7 +40,7 @@
         v-model="phone"
         outlined
         dense
-        label="Phone Number"
+        :label="locale.t('auth.phone') + ' *'"
         :rules="[required('Phone number is required'), phoneRule]"
         lazy-rules
       >
@@ -48,7 +52,7 @@
         outlined
         dense
         :type="showPassword ? 'text' : 'password'"
-        label="Password"
+        :label="locale.t('auth.password') + ' *'"
         :rules="[required('Password is required'), minLength(6)]"
         lazy-rules
       >
@@ -67,7 +71,7 @@
         outlined
         dense
         :type="showPassword ? 'text' : 'password'"
-        label="Confirm Password"
+        :label="locale.t('auth.confirmPassword') + ' *'"
         :rules="[required('Confirm password is required'), sameAs(() => password, 'Passwords do not match')]"
         lazy-rules
       >
@@ -88,15 +92,15 @@
         size="lg"
         class="full-width q-mt-md text-weight-bold"
         :loading="loading"
-        label="Complete Registration"
+        :label="locale.t('auth.completeReg')"
         icon-right="sym_o_how_to_reg"
       />
     </q-form>
 
     <div class="text-center text-body2 text-grey-7 q-mt-md">
-      Already have an account?
+      {{ locale.t('auth.hasAccount') }}
       <a href="#" class="text-primary text-weight-bold text-decoration-none q-ml-xs" @click.prevent="$emit('back')">
-        Sign in
+        {{ locale.t('auth.signInLink') }}
       </a>
     </div>
   </q-card>
@@ -106,11 +110,13 @@
 import { ref } from 'vue'
 import { Notify } from 'quasar'
 import { useAuthStore } from '@/stores/auth'
+import { useLocaleStore } from '@/stores/locale'
 import { emailRule, minLength, phoneRule, required, sameAs } from '@/utils/validators'
 
 const emit = defineEmits(['back'])
 
 const auth = useAuthStore()
+const locale = useLocaleStore()
 
 const name = ref('')
 const email = ref('')
@@ -132,12 +138,12 @@ function onSubmit() {
   })
   loading.value = false
   if (!result.ok) {
-    error.value = result.message || 'Registration failed.'
+    error.value = locale.lang === 'bn' ? 'এই ইমেইল দিয়ে ইতোমধ্যে একটি অ্যাকাউন্ট রয়েছে।' : (result.message || 'Registration failed.')
     return
   }
   Notify.create({
     type: 'positive',
-    message: 'Account registered successfully! Please sign in.',
+    message: locale.lang === 'bn' ? 'রেজিস্ট্রেশন সফল হয়েছে! দয়া করে লগইন করুন।' : 'Account registered successfully! Please sign in.',
     position: 'top',
   })
   emit('back')

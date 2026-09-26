@@ -5,11 +5,22 @@ import { round2 } from '@/utils/money'
 
 const newestFirst = (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
 
+const isToday = (dateStr) => {
+  if (!dateStr) return false
+  const d = new Date(dateStr)
+  const now = new Date()
+  return (
+    d.getDate() === now.getDate() &&
+    d.getMonth() === now.getMonth() &&
+    d.getFullYear() === now.getFullYear()
+  )
+}
+
 export const useOrderStore = defineStore('orders', {
   state: () => ({
-    orders: [], // every placed order (saved)
-    seq: 0, // last invoice number handed out (saved)
-    cart: [], // the order being built right now (kept while the app is open)
+    orders: [], // every placed order
+    seq: 0, // last invoice number
+    cart: [], // current order items
   }),
 
   getters: {
@@ -23,23 +34,13 @@ export const useOrderStore = defineStore('orders', {
     },
     qtyInCart: (state) => (itemId) => state.cart.find((l) => l.itemId === itemId)?.qty ?? 0,
 
-    /** Orders still to be served - newest first. */
+    /** Active / Upcoming orders - latest first */
     upcoming: (state) => state.orders.filter((o) => o.status === 'upcoming').sort(newestFirst),
-    /** Orders already completed - newest first. */
+    /** Completed orders - latest first */
     previous: (state) => state.orders.filter((o) => o.status === 'completed').sort(newestFirst),
     byId: (state) => (id) => state.orders.find((o) => o.id === id) ?? null,
 
-    /**
-     * Table + seat conflict check (Task 5).
-     *
-     * The project has no start/end time or booking-duration model — a table is
-     * simply occupied for as long as an order against it is still 'upcoming'
-     * and free again once that order is completed. So "overlapping bookings"
-     * here means: another order already active for the same table + seat
-     * (and, when set, the same branch). This is re-run right before an order
-     * is persisted, not only when the table was first picked, so a table
-     * taken by someone else in the meantime is still caught.
-     */
+    /** Table + seat conflict check (Requirement 4) */
     findActiveBookingConflict: (state) => ({ table, seat, branch, excludeOrderId } = {}) => {
       const norm = (v) => String(v ?? '').trim().toLowerCase()
       const normTable = norm(table)
@@ -52,12 +53,71 @@ export const useOrderStore = defineStore('orders', {
           if (o.status !== 'upcoming') return false
           if (excludeOrderId && o.id === excludeOrderId) return false
           if (norm(o.table) !== normTable) return false
-          if (norm(o.seat) !== normSeat) return false
+          // If seat specified on either order, check exact seat match; if no seat specified, table itself is occupied
+          if (normSeat && norm(o.seat) && norm(o.seat) !== normSeat) return false
           const oBranch = norm(o.branch)
           if (normBranch && oBranch && oBranch !== normBranch) return false
           return true
         }) ?? null
       )
+    },
+
+    /** Table occupancy status dictionary for visual map */
+    tableStatusMap: (state) => {
+      const map = {}
+      state.orders.forEach((o) => {
+        if (o.status === 'upcoming') {
+          const t = String(o.table).trim()
+          if (!map[t]) {
+            map[t] = {
+              occupied: true,
+              customerName: o.customer?.name || 'Guest',
+              seat: o.seat || '1',
+              invoiceNo: o.invoiceNo,
+            }
+          }
+        }
+      })
+      return map
+    },
+
+    // Daily Revenue & Analytics (Requirement 3)
+    todayOrders: (state) => state.orders.filter((o) => isToday(o.createdAt)),
+    todayRevenue() {
+      return round2(this.todayOrders.reduce((sum, o) => sum + (o.total || 0), 0))
+    },
+    todayCompletedRevenue() {
+      return round2(
+        this.todayOrders
+          .filter((o) => o.status === 'completed')
+          .reduce((sum, o) => sum + (o.total || 0), 0),
+      )
+    },
+    todayPendingRevenue() {
+      return round2(
+        this.todayOrders
+          .filter((o) => o.status === 'upcoming')
+          .reduce((sum, o) => sum + (o.total || 0), 0),
+      )
+    },
+    todayAov() {
+      const count = this.todayOrders.length
+      return count > 0 ? round2(this.todayRevenue / count) : 0
+    },
+    todayTopItems() {
+      const itemMap = {}
+      this.todayOrders.forEach((o) => {
+        ;(o.lines || []).forEach((l) => {
+          if (!itemMap[l.name]) {
+            itemMap[l.name] = { name: l.name, qty: 0, revenue: 0 }
+          }
+          itemMap[l.name].qty += l.qty
+          itemMap[l.name].revenue += round2(l.price * l.qty)
+        })
+      })
+      return Object.values(itemMap)
+        .sort((a, b) => b.qty - a.qty)
+        .slice(0, 5)
     },
   },
 
@@ -69,6 +129,7 @@ export const useOrderStore = defineStore('orders', {
         this.cart.push({
           itemId: item.id,
           name: item.name,
+          nameBn: item.nameBn || item.name,
           category: item.category,
           price: item.price,
           qty: 1,
@@ -91,21 +152,19 @@ export const useOrderStore = defineStore('orders', {
       this.cart = []
     },
 
-    /**
-     * Turns the cart into a saved order and empties the cart.
-     * Returns { ok: true, order } on success, or
-     * { ok: false, code: 'emptyCart' | 'conflict', table?, seat? } when it can't be placed.
-     *
-     * The table/seat availability check runs here, right before the order is
-     * persisted — this is the authoritative, single source of truth for what's
-     * booked (see findActiveBookingConflict), so a table taken moments earlier
-     * by another order is still rejected even if the UI let the user get this far.
-     */
     placeOrder({ customerName, phone, table, seat, branch, restaurant }) {
       if (!this.cart.length) return { ok: false, code: 'emptyCart' }
 
       const conflict = this.findActiveBookingConflict({ table, seat, branch })
-      if (conflict) return { ok: false, code: 'conflict', table: conflict.table, seat: conflict.seat }
+      if (conflict) {
+        return {
+          ok: false,
+          code: 'conflict',
+          table: conflict.table,
+          seat: conflict.seat,
+          customerName: conflict.customer?.name || 'Guest',
+        }
+      }
 
       this.seq += 1
       const order = {
@@ -113,7 +172,7 @@ export const useOrderStore = defineStore('orders', {
         invoiceNo: `INV-${String(this.seq).padStart(5, '0')}`,
         customer: { name: customerName.trim(), phone: (phone || '').trim() },
         table: String(table).trim(),
-        seat: seat ? String(seat).trim() : '',
+        seat: seat ? String(seat).trim() : '1',
         branch: branch || '',
         restaurant: restaurant || null,
         lines: this.cart.map((l) => ({ ...l, amount: round2(l.price * l.qty) })),

@@ -43,7 +43,7 @@
     <div class="items-receipt-list q-my-sm">
       <div v-for="l in order.lines" :key="l.itemId" class="row justify-between items-start q-py-xs text-body2">
         <div class="col">
-          <div class="text-weight-bold">{{ l.name }}</div>
+          <div class="text-weight-bold">{{ locale.lang === 'bn' && l.nameBn ? l.nameBn : l.name }}</div>
           <div class="text-caption text-grey-6 font-mono">
             {{ l.qty }} &times; {{ formatMoney(l.price) }}
           </div>
@@ -73,7 +73,7 @@
 
     <q-separator dashed class="q-my-sm" />
     <div class="text-center text-caption text-grey-6 q-mt-sm">
-      Thank you for dining with us!
+      {{ locale.t('invoices.thankYou') }}
     </div>
   </div>
 </template>
@@ -82,17 +82,22 @@
 import { computed } from 'vue'
 import { formatDateTime } from '@/utils/dates'
 import { formatMoney } from '@/utils/money'
+import { useLocaleStore } from '@/stores/locale'
 
 const props = defineProps({
   order: { type: Object, required: true },
   restaurant: { type: Object, default: null },
 })
 
-const seating = computed(() =>
-  [props.order.table && `Table ${props.order.table}`, props.order.seat && `Seat ${props.order.seat}`]
+const locale = useLocaleStore()
+
+const seating = computed(() => {
+  const tLabel = locale.t('invoices.table')
+  const sLabel = locale.t('invoices.seat')
+  return [props.order.table && `${tLabel} ${props.order.table}`, props.order.seat && `${sLabel} ${props.order.seat}`]
     .filter(Boolean)
-    .join(', '),
-)
+    .join(', ')
+})
 </script>
 
 <style scoped>
