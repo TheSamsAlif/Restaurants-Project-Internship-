@@ -310,7 +310,7 @@
       v-if="activeOrder"
       v-model="dialogOpen"
       :order="activeOrder"
-      :restaurant="restaurantStore.forOrder(activeOrder)"
+      :restaurant="activeRestaurant"
       @complete="onComplete"
       @reopen="onReopen"
       @close="onDialogClose"
@@ -320,7 +320,6 @@
 
 <script setup>
 import { computed, ref, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
 import { Notify } from 'quasar'
 import { useOrderStore } from '@/stores/orders'
 import { useRestaurantStore } from '@/stores/restaurants'
@@ -331,8 +330,6 @@ import { downloadInvoicePdf, printInvoice } from '@/utils/invoice'
 import InvoiceDialog from '@/components/invoice/InvoiceDialog.vue'
 
 const props = defineProps({ id: { type: String, default: '' } })
-const route = useRoute()
-const router = useRouter()
 const orders = useOrderStore()
 const restaurantStore = useRestaurantStore()
 const locale = useLocaleStore()
@@ -369,14 +366,23 @@ const rows = computed(() => {
 const dialogOpen = ref(false)
 const activeOrder = ref(null)
 
+const activeRestaurant = computed(() => {
+  if (!activeOrder.value) return null
+  try {
+    return restaurantStore.forOrder(activeOrder.value) || { name: 'Restaurant POS' }
+  } catch {
+    return { name: 'Restaurant POS' }
+  }
+})
+
 function openOrder(o) {
+  if (!o) return
   activeOrder.value = o
   dialogOpen.value = true
-  if (route.params.id !== o.id) router.replace(`/app/invoices/${o.id}`)
 }
 
 function onDialogClose() {
-  if (route.params.id) router.replace('/app/invoices')
+  dialogOpen.value = false
 }
 
 function onComplete(id) {

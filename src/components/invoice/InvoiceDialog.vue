@@ -1,5 +1,5 @@
 <template>
-  <q-dialog v-model="open" @hide="$emit('close')">
+  <q-dialog v-model="open" @hide="onHide">
     <q-card
       class="surface-card column no-wrap"
       style="width: 720px; max-width: 96vw; max-height: 92vh; border-radius: 16px; overflow: hidden; display: flex; flex-direction: column;"
@@ -304,15 +304,17 @@ const emit = defineEmits(['update:modelValue', 'close', 'complete', 'reopen'])
 const locale = useLocaleStore()
 const activeTab = ref('details')
 
-const open = ref(props.modelValue)
+const open = computed({
+  get: () => props.modelValue,
+  set: (val) => emit('update:modelValue', val),
+})
+
 watch(
   () => props.modelValue,
   (v) => {
-    open.value = v
     if (v) activeTab.value = 'details'
   },
 )
-watch(open, (v) => emit('update:modelValue', v))
 
 watch(
   () => props.order?.id,
@@ -320,6 +322,11 @@ watch(
     activeTab.value = 'details'
   },
 )
+
+function onHide() {
+  emit('update:modelValue', false)
+  emit('close')
+}
 
 const customerName = computed(() => {
   const c = props.order?.customer
