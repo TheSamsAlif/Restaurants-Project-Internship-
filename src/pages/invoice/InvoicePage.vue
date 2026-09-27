@@ -224,7 +224,7 @@
 
               <div>
                 <div class="row items-center" style="gap: 8px">
-                  <span class="text-subtitle1 text-weight-bolder">{{ o.customer?.name || 'Customer' }}</span>
+                  <span class="text-subtitle1 text-weight-bolder">{{ typeof o.customer === 'string' ? o.customer : (o.customer?.name || 'Customer') }}</span>
                   <q-badge
                     :color="o.status === 'upcoming' ? 'warning' : 'positive'"
                     :label="o.status === 'upcoming' ? (locale.lang === 'bn' ? 'চলমান' : 'Upcoming') : (locale.lang === 'bn' ? 'সম্পন্ন' : 'Completed')"
@@ -254,7 +254,20 @@
               </div>
 
               <!-- Quick action buttons on each order as required by Step 5 -->
-              <div class="row q-gutter-xs" @click.stop>
+              <div class="row q-gutter-xs items-center" @click.stop>
+                <q-btn
+                  v-if="o.status === 'upcoming'"
+                  unelevated
+                  dense
+                  size="sm"
+                  color="positive"
+                  icon="sym_o_check_circle"
+                  :label="locale.lang === 'bn' ? 'সম্পন্ন করুন' : 'Complete'"
+                  class="q-px-sm text-weight-bolder"
+                  @click="onComplete(o.id)"
+                >
+                  <q-tooltip>{{ locale.lang === 'bn' ? 'অর্ডারটি সম্পন্ন করুন ও আয়ে যোগ করুন' : 'Mark order as completed and add to sales' }}</q-tooltip>
+                </q-btn>
                 <q-btn
                   unelevated
                   dense
@@ -337,11 +350,15 @@ const todayDateFormatted = computed(() => {
   })
 })
 
-const matches = (o, needle) =>
-  !needle ||
-  o.invoiceNo.toLowerCase().includes(needle) ||
-  (o.customer?.name || '').toLowerCase().includes(needle) ||
-  String(o.table).toLowerCase().includes(needle)
+const matches = (o, needle) => {
+  if (!needle) return true
+  const cName = typeof o.customer === 'string' ? o.customer : (o.customer?.name || '')
+  return (
+    o.invoiceNo.toLowerCase().includes(needle) ||
+    cName.toLowerCase().includes(needle) ||
+    String(o.table).toLowerCase().includes(needle)
+  )
+}
 
 const rows = computed(() => {
   const needle = search.value?.trim().toLowerCase() ?? ''
@@ -365,18 +382,32 @@ function onDialogClose() {
 function onComplete(id) {
   orders.complete(id)
   dialogOpen.value = false
+  if (activeOrder.value && activeOrder.value.id === id) {
+    activeOrder.value = { ...activeOrder.value, status: 'completed', completedAt: new Date().toISOString() }
+  }
   Notify.create({
     type: 'positive',
-    message: locale.lang === 'bn' ? 'অর্ডার সম্পন্ন হিসেবে চিহ্নিত হয়েছে।' : 'Order marked as completed.',
+    icon: 'sym_o_task_alt',
+    message:
+      locale.lang === 'bn'
+        ? 'অর্ডার সফলভাবে সম্পন্ন হয়েছে এবং আজকের মোট আয়ে যোগ করা হয়েছে।'
+        : 'Order marked as completed and added to today\'s sales revenue.',
   })
 }
 
 function onReopen(id) {
   orders.reopen(id)
   dialogOpen.value = false
+  if (activeOrder.value && activeOrder.value.id === id) {
+    activeOrder.value = { ...activeOrder.value, status: 'upcoming', completedAt: null }
+  }
   Notify.create({
     type: 'info',
-    message: locale.lang === 'bn' ? 'অর্ডার আবার চলমানে ফেরত নেওয়া হয়েছে।' : 'Order moved back to upcoming.',
+    icon: 'sym_o_info',
+    message:
+      locale.lang === 'bn'
+        ? 'অর্ডার আবার চলমান/কিচেনে ফেরত নেওয়া হয়েছে।'
+        : 'Order moved back to in-kitchen / upcoming.',
   })
 }
 

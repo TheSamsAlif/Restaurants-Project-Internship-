@@ -1,11 +1,14 @@
 <template>
   <q-dialog v-model="open" @hide="$emit('close')">
-    <q-card class="surface-card" style="width: 660px; max-width: 96vw; border-radius: 16px;">
-      <!-- Dialog Header -->
-      <q-card-section class="row items-center q-pb-none no-print border-bottom">
+    <q-card
+      class="surface-card column no-wrap"
+      style="width: 720px; max-width: 96vw; max-height: 92vh; border-radius: 16px; overflow: hidden; display: flex; flex-direction: column;"
+    >
+      <!-- Dialog Header (Fixed at top) -->
+      <q-card-section class="col-auto row items-center q-pb-none no-print border-bottom">
         <div class="row items-center" style="gap: 10px">
           <q-avatar
-            size="36px"
+            size="38px"
             :color="order.status === 'upcoming' ? 'amber-1' : 'green-1'"
             :text-color="order.status === 'upcoming' ? 'warning' : 'positive'"
             :icon="order.status === 'upcoming' ? 'sym_o_schedule' : 'sym_o_check_circle'"
@@ -15,7 +18,7 @@
               <span class="text-subtitle1 text-weight-bolder">{{ order.invoiceNo }}</span>
               <q-badge
                 :color="order.status === 'upcoming' ? 'warning' : 'positive'"
-                :label="order.status === 'upcoming' ? (locale.lang === 'bn' ? 'চলমান অর্ডার' : 'Upcoming Order') : (locale.lang === 'bn' ? 'সম্পন্ন অর্ডার' : 'Completed Order')"
+                :label="order.status === 'upcoming' ? (locale.lang === 'bn' ? 'চলমান কিচেন অর্ডার' : 'Upcoming Order') : (locale.lang === 'bn' ? 'সম্পন্ন অর্ডার' : 'Completed Order')"
                 class="text-weight-bold"
               />
             </div>
@@ -29,7 +32,7 @@
       </q-card-section>
 
       <!-- View Selector Tabs: Details & History vs Printable Thermal Slip -->
-      <div class="q-px-md q-pt-sm bg-surface-sunken border-bottom no-print">
+      <div class="col-auto q-px-md q-pt-sm bg-surface-sunken border-bottom no-print">
         <q-tabs
           v-model="activeTab"
           dense
@@ -42,7 +45,8 @@
         </q-tabs>
       </div>
 
-      <q-tab-panels v-model="activeTab" animated class="bg-surface">
+      <!-- Scrollable Tab Panels Body -->
+      <q-tab-panels v-model="activeTab" animated class="col scroll bg-surface">
         <!-- TAB 1: Order Details & History -->
         <q-tab-panel name="details" class="q-pa-md q-gutter-y-md">
           <!-- Order History Timeline -->
@@ -53,7 +57,7 @@
             <div class="row items-center justify-between text-body2 q-col-gutter-sm">
               <!-- Step 1: Placed -->
               <div class="col-12 col-sm-4 row items-center" style="gap: 8px">
-                <q-icon name="sym_o_check_circle" color="positive" size="20px" />
+                <q-icon name="sym_o_check_circle" color="positive" size="22px" />
                 <div>
                   <div class="text-weight-bold text-caption">{{ locale.t('invoices.orderPlaced') }}</div>
                   <div class="text-caption text-grey-6 font-mono">{{ formatDateTime(order.createdAt) }}</div>
@@ -63,9 +67,9 @@
               <!-- Step 2: Seating & Kitchen -->
               <div class="col-12 col-sm-4 row items-center" style="gap: 8px">
                 <q-icon
-                  :name="order.status === 'completed' ? 'sym_o_check_circle' : 'sym_o_hourglass_top'"
+                  :name="order.status === 'completed' ? 'sym_o_check_circle' : 'sym_o_soup_kitchen'"
                   :color="order.status === 'completed' ? 'positive' : 'warning'"
-                  size="20px"
+                  size="22px"
                 />
                 <div>
                   <div class="text-weight-bold text-caption">
@@ -75,18 +79,31 @@
                 </div>
               </div>
 
-              <!-- Step 3: Completed / Status -->
+              <!-- Step 3: Completed / Status (with one-click inline completion button) -->
               <div class="col-12 col-sm-4 row items-center" style="gap: 8px">
                 <q-icon
-                  :name="order.status === 'completed' ? 'sym_o_task_alt' : 'sym_o_radio_button_unchecked'"
-                  :color="order.status === 'completed' ? 'positive' : 'grey-5'"
-                  size="20px"
+                  :name="order.status === 'completed' ? 'sym_o_task_alt' : 'sym_o_hourglass_top'"
+                  :color="order.status === 'completed' ? 'positive' : 'warning'"
+                  size="22px"
                 />
-                <div>
-                  <div class="text-weight-bold text-caption">{{ locale.t('invoices.completedServed') }}</div>
-                  <div class="text-caption text-grey-6 font-mono">
-                    {{ order.completedAt ? formatDateTime(order.completedAt) : (locale.lang === 'bn' ? 'চলমান...' : 'In Progress') }}
+                <div class="col">
+                  <div class="text-weight-bold text-caption">
+                    {{ order.status === 'completed' ? locale.t('invoices.completedServed') : (locale.lang === 'bn' ? 'চলমান / পরিবেশন বাকি' : 'Awaiting Serving') }}
                   </div>
+                  <div class="text-caption text-grey-6 font-mono q-mb-xs">
+                    {{ order.completedAt ? formatDateTime(order.completedAt) : (locale.lang === 'bn' ? 'কিচেনে প্রস্তুত হচ্ছে' : 'In Kitchen Preparation') }}
+                  </div>
+                  <q-btn
+                    v-if="order.status === 'upcoming'"
+                    unelevated
+                    dense
+                    color="positive"
+                    size="xs"
+                    icon="sym_o_check_circle"
+                    :label="locale.lang === 'bn' ? 'সম্পন্ন করুন' : 'Complete Order'"
+                    class="q-px-sm text-weight-bolder"
+                    @click="$emit('complete', order.id)"
+                  />
                 </div>
               </div>
             </div>
@@ -100,11 +117,11 @@
             <div class="row q-col-gutter-md">
               <div class="col-6 col-sm-3">
                 <div class="text-caption text-grey-6">{{ locale.t('invoices.customer') }}</div>
-                <div class="text-body2 text-weight-bolder">{{ order.customer?.name || 'Walk-in Guest' }}</div>
+                <div class="text-body2 text-weight-bolder">{{ customerName }}</div>
               </div>
               <div class="col-6 col-sm-3">
                 <div class="text-caption text-grey-6">{{ locale.t('invoices.phone') }}</div>
-                <div class="text-body2 font-mono">{{ order.customer?.phone || 'N/A' }}</div>
+                <div class="text-body2 font-mono">{{ customerPhone }}</div>
               </div>
               <div class="col-6 col-sm-3">
                 <div class="text-caption text-grey-6">{{ locale.t('invoices.seating') }}</div>
@@ -122,7 +139,7 @@
           <!-- Itemized Food Details Table -->
           <div>
             <div class="text-caption text-weight-bold text-grey-7 text-uppercase q-mb-xs">
-              {{ locale.t('invoices.itemsOrdered') }} ({{ order.lines?.length || 0 }})
+              {{ locale.t('invoices.itemsOrdered') }} ({{ (order.lines || []).length }})
             </div>
             <q-markup-table flat bordered dense class="rounded-borders">
               <thead>
@@ -135,7 +152,7 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="(l, idx) in order.lines" :key="l.itemId || idx">
+                <tr v-for="(l, idx) in (order.lines || [])" :key="l.itemId || idx">
                   <td class="text-grey-6 font-mono">{{ idx + 1 }}</td>
                   <td class="text-weight-bold">
                     <div>{{ locale.lang === 'bn' && l.nameBn ? l.nameBn : l.name }}</div>
@@ -151,10 +168,10 @@
 
           <!-- Billing & Financial Breakdown -->
           <div class="row justify-end q-mt-sm">
-            <div class="col-12 col-sm-6 surface-sunken q-pa-md rounded-borders column q-gutter-y-xs">
+            <div class="col-12 col-sm-7 surface-sunken q-pa-md rounded-borders column q-gutter-y-xs">
               <div class="row justify-between text-body2">
                 <span class="text-grey-6">{{ locale.t('invoices.subtotal') }}:</span>
-                <span class="font-mono">{{ formatMoney(order.subtotal) }}</span>
+                <span class="font-mono">{{ formatMoney(order.subtotal || 0) }}</span>
               </div>
               <div v-if="order.discountAmount > 0" class="row justify-between text-body2 text-positive text-weight-bold">
                 <span>
@@ -166,14 +183,37 @@
               </div>
               <div class="row justify-between text-body2">
                 <span class="text-grey-6">{{ locale.t('invoices.vat') }} ({{ Math.round((order.taxRate || 0.05) * 100) }}%):</span>
-                <span class="font-mono">{{ formatMoney(order.tax) }}</span>
+                <span class="font-mono">{{ formatMoney(order.tax || 0) }}</span>
               </div>
               <q-separator class="q-my-xs" />
               <div class="row justify-between text-h6 text-weight-bolder text-primary">
                 <span>{{ locale.t('invoices.total') }}:</span>
-                <span class="font-mono">{{ formatMoney(order.total) }}</span>
+                <span class="font-mono">{{ formatMoney(order.total || 0) }}</span>
               </div>
             </div>
+          </div>
+
+          <!-- Upcoming order notice & direct action -->
+          <div
+            v-if="order.status === 'upcoming'"
+            class="q-mt-sm q-pa-sm rounded-borders bg-amber-1 row items-center justify-between"
+            style="border: 1px dashed rgba(217, 119, 6, 0.4);"
+          >
+            <div class="row items-center" style="gap: 8px">
+              <q-icon name="sym_o_info" color="warning" size="20px" />
+              <span class="text-caption text-grey-9 text-weight-medium">
+                {{ locale.lang === 'bn' ? 'পরিবেশন শেষ হলে "অর্ডার সম্পন্ন করুন" বাটনে ক্লিক করুন, বিক্রির টাকা হিসেবে যুক্ত হবে।' : 'Click "Mark as Completed" after serving to record sales into revenue.' }}
+              </span>
+            </div>
+            <q-btn
+              unelevated
+              dense
+              color="positive"
+              icon="sym_o_check_circle"
+              :label="locale.lang === 'bn' ? 'সম্পন্ন করুন' : 'Mark Completed'"
+              class="q-px-sm text-weight-bold"
+              @click="$emit('complete', order.id)"
+            />
           </div>
         </q-tab-panel>
 
@@ -183,28 +223,28 @@
         </q-tab-panel>
       </q-tab-panels>
 
-      <!-- Action Buttons Footer -->
-      <q-card-actions class="q-px-md q-pb-md no-print row items-center justify-between border-top">
+      <!-- Action Buttons Footer (ALWAYS FIXED AT BOTTOM, NEVER CLIPPED) -->
+      <q-card-actions class="col-auto q-px-md q-py-sm no-print row items-center justify-between border-top bg-surface" style="flex-shrink: 0; min-height: 56px;">
         <!-- Status Switcher -->
         <div>
           <q-btn
             v-if="order.status === 'upcoming'"
             unelevated
-            dense
             color="positive"
             icon="sym_o_check_circle"
-            :label="locale.t('invoices.markDone')"
-            class="q-px-sm"
+            :label="locale.lang === 'bn' ? 'অর্ডার সম্পন্ন করুন' : 'Mark as Completed'"
+            class="q-px-md text-weight-bolder shadow-1"
             @click="$emit('complete', order.id)"
-          />
+          >
+            <q-tooltip>{{ locale.lang === 'bn' ? 'অর্ডারটি সম্পন্ন করুন ও সেলস রেভিনিউতে যোগ করুন' : 'Mark order as completed and add to completed sales' }}</q-tooltip>
+          </q-btn>
           <q-btn
             v-else
             flat
-            dense
             color="warning"
             icon="sym_o_undo"
-            :label="locale.t('invoices.reopen')"
-            class="q-px-sm"
+            :label="locale.lang === 'bn' ? 'আবার চলমানে ফেরত নিন' : 'Move back to Upcoming'"
+            class="q-px-sm text-weight-bold"
             @click="$emit('reopen', order.id)"
           />
         </div>
@@ -246,7 +286,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { Notify } from 'quasar'
 import InvoiceSlip from '@/components/invoice/InvoiceSlip.vue'
 import { downloadInvoicePdf, downloadInvoiceText, printInvoice } from '@/utils/invoice'
@@ -265,8 +305,34 @@ const locale = useLocaleStore()
 const activeTab = ref('details')
 
 const open = ref(props.modelValue)
-watch(() => props.modelValue, (v) => (open.value = v))
+watch(
+  () => props.modelValue,
+  (v) => {
+    open.value = v
+    if (v) activeTab.value = 'details'
+  },
+)
 watch(open, (v) => emit('update:modelValue', v))
+
+watch(
+  () => props.order?.id,
+  () => {
+    activeTab.value = 'details'
+  },
+)
+
+const customerName = computed(() => {
+  const c = props.order?.customer
+  if (!c) return 'Walk-in Guest'
+  if (typeof c === 'string') return c.trim() || 'Walk-in Guest'
+  return c.name || 'Walk-in Guest'
+})
+
+const customerPhone = computed(() => {
+  const c = props.order?.customer
+  if (!c || typeof c === 'string') return 'N/A'
+  return c.phone || 'N/A'
+})
 
 const pdfLoading = ref(false)
 

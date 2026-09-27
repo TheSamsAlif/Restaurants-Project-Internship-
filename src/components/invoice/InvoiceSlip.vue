@@ -21,7 +21,7 @@
       </div>
       <div class="row justify-between">
         <span class="text-grey-6">Customer:</span>
-        <span class="text-weight-bold">{{ order.customer?.name || 'Walk-in' }}</span>
+        <span class="text-weight-bold">{{ typeof order.customer === 'string' ? order.customer : (order.customer?.name || 'Walk-in') }}</span>
       </div>
       <div v-if="order.customer?.phone" class="row justify-between">
         <span class="text-grey-6">Phone:</span>

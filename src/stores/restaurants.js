@@ -29,14 +29,17 @@ export const useRestaurantStore = defineStore('restaurants', {
 
     /** What an invoice should show for a given order: the saved snapshot, plus the live logo. */
     forOrder: (state) => (order) => {
-      const live = state.list.find((r) => r.id === order.restaurant?.id)
+      if (!order) return null
       const snap = order.restaurant
+      const live = snap?.id
+        ? state.list.find((r) => r.id === snap.id)
+        : (state.active || state.list[0] || null)
       if (!snap && !live) return null
       return {
-        name: snap?.name ?? live.name,
-        address: snap?.address ?? live.address,
-        phone: snap?.phone ?? live.phone,
-        logo: live?.logo || '',
+        name: snap?.name || live?.name || 'Restaurant POS',
+        address: snap?.address || live?.address || '',
+        phone: snap?.phone || live?.phone || '',
+        logo: live?.logo || snap?.logo || '',
       }
     },
   },

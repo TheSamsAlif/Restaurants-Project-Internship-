@@ -79,9 +79,13 @@ export const useOrderStore = defineStore('orders', {
           if (!map[t]) {
             map[t] = {
               occupied: true,
-              customerName: o.customer?.name || 'Guest',
+              customerName:
+                typeof o.customer === 'string'
+                  ? o.customer
+                  : o.customer?.name || 'Guest',
               seat: o.seat || '1',
               invoiceNo: o.invoiceNo,
+              orderId: o.id,
             }
           }
         }
@@ -183,7 +187,10 @@ export const useOrderStore = defineStore('orders', {
           code: 'conflict',
           table: conflict.table,
           seat: conflict.seat,
-          customerName: conflict.customer?.name || 'Guest',
+          customerName:
+            typeof conflict.customer === 'string'
+              ? conflict.customer
+              : conflict.customer?.name || 'Guest',
         }
       }
 

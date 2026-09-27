@@ -14,8 +14,7 @@ const routes = [
       { path: 'restaurant', component: () => import('@/pages/restaurant/RestaurantSetupPage.vue') },
       { path: 'items', component: () => import('@/pages/items/ItemsPage.vue') },
       { path: 'orders', component: () => import('@/pages/orders/OrderPage.vue') },
-      { path: 'invoices', component: () => import('@/pages/invoice/InvoicePage.vue') },
-      { path: 'invoices/:id', component: () => import('@/pages/invoice/InvoicePage.vue'), props: true },
+      { path: 'invoices/:id?', component: () => import('@/pages/invoice/InvoicePage.vue'), props: true },
     ],
   },
 

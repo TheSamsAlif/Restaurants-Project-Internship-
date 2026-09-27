@@ -5,6 +5,8 @@ import { formatMoneyPlain } from '@/utils/money'
 
 const taxLabel = (order) => `VAT (${Math.round(order.taxRate * 1000) / 10}%)`
 const seatLabel = (order) => [order.table && `Table ${order.table}`, order.seat && `Seat ${order.seat}`].filter(Boolean).join(', ')
+const custName = (order) => (typeof order.customer === 'string' ? order.customer : (order.customer?.name || 'Walk-in Guest'))
+const custPhone = (order) => (typeof order.customer === 'string' ? '' : (order.customer?.phone || ''))
 
 /* ------------------------------------------------------------------ */
 /* Plain text invoice                                                  */
@@ -42,8 +44,8 @@ export function buildInvoiceText(order, restaurant) {
   out.push(rule())
   out.push(pair('Invoice', order.invoiceNo))
   out.push(pair('Date', formatDateTime(order.createdAt)))
-  out.push(pair('Customer', order.customer.name))
-  if (order.customer.phone) out.push(pair('Phone', order.customer.phone))
+  out.push(pair('Customer', custName(order)))
+  if (custPhone(order)) out.push(pair('Phone', custPhone(order)))
   if (seatLabel(order)) out.push(pair('Seating', seatLabel(order)))
   out.push(rule())
 
@@ -122,8 +124,8 @@ function buildInvoiceHtml(order, restaurant) {
   <hr class="rule" />
   <div class="row"><span>Invoice</span><span>${esc(order.invoiceNo)}</span></div>
   <div class="row"><span>Date</span><span>${esc(formatDateTime(order.createdAt))}</span></div>
-  <div class="row"><span>Customer</span><span>${esc(order.customer.name)}</span></div>
-  ${order.customer.phone ? `<div class="row"><span>Phone</span><span>${esc(order.customer.phone)}</span></div>` : ''}
+  <div class="row"><span>Customer</span><span>${esc(custName(order))}</span></div>
+  ${custPhone(order) ? `<div class="row"><span>Phone</span><span>${esc(custPhone(order))}</span></div>` : ''}
   ${seatLabel(order) ? `<div class="row"><span>Seating</span><span>${esc(seatLabel(order))}</span></div>` : ''}
   <hr class="rule" />
   ${rows}
@@ -210,8 +212,8 @@ function drawSlip(doc, order, restaurant, width) {
 
   row('Invoice', order.invoiceNo)
   row('Date', formatDateTime(order.createdAt))
-  row('Customer', order.customer.name)
-  if (order.customer.phone) row('Phone', order.customer.phone)
+  row('Customer', custName(order))
+  if (custPhone(order)) row('Phone', custPhone(order))
   if (seatLabel(order)) row('Seating', seatLabel(order))
   dashed()
 
